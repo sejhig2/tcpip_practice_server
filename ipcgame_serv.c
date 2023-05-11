@@ -71,6 +71,9 @@ int main(int argc, char **argv)
 
 	if (bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr))) {
 		error_handling("bind() error");
+		/*
+		 * 에러 발생시 리턴값을 받아서 해당 리턴값이 왜 발생했는지 확인해보도록
+		 */
 	}
 	if (listen(serv_sock, 5)) {
 		error_handling("listen() error");
@@ -105,7 +108,7 @@ int main(int argc, char **argv)
 
 			/* 가위바위보 시작*/
 			write(1, intro, sizeof(intro)); /* 서버의 입력을 요구 */
-			read(0, buffer, BUFSIZE); /* 서버의 입력을 커맨드 라인을 통해서  받음 */
+			read(0, &buffer[0], BUFSIZE); /* 서버의 입력을 커맨드 라인을 통해서  받음 buffer[0] : 서버의 선택, buffer[1] 클라이언트의 선택*/
 			read(fd1[0], &buffer[1], BUFSIZE - 1); /* 자식 프로세스(클라이언트에게 전달 받은 데이터)의 데이터를 읽어들임  */
 
 			result = who_win(buffer[0], buffer[1]); /* 서버의 입력(서버-부모 프로세스)과 클라이언트(서버-자식 프로세스)의 값을 비교-> 승자 결정 */
@@ -126,17 +129,17 @@ int main(int argc, char **argv)
 
 		} else {
 			close(serv_sock);
-			/* 자식 프로세스의 작업 내용
-			 * 1. 클라이언트에게 가위바위보 선택하라고 요청( socket 이용)
-			 * 2. 클라이언트의 가위바위보 선택 수신(socket 이용)
-			 * 3. 클라이언트의 가위바위보를 서버의 부모 프로세스로 전달 (pipe 이용)
-			 * 4. 서버와 클라이언트의 가위바위보 결과를 서버의 부모 프로세스에게 수신 ( pipe 이용)
-			 * 5. 가위바위보 결과를 클라이언트에게 전달.(socket 이용) */
-			write(clnt_sock, intro, sizeof(intro)); /* 1 */
-			read(clnt_sock, buffer, BUFSIZE); /* 2 */
-			write(fd1[1], buffer, 1); /* 3 */
-			str_len = read(fd2[0], buffer, BUFSIZE); /* 4 */
-			write(clnt_sock, buffer, str_len); /* 5 */
+			/* 자식 프로세스의 작업 내용 */
+			/* 1. 클라이언트에게 가위바위보 선택하라고 요청( socket 이용)*/
+			write(clnt_sock, intro, sizeof(intro));
+			/* 2. 클라이언트의 가위바위보 선택 수신(socket 이용)*/
+			read(clnt_sock, buffer, BUFSIZE);
+			/* 3. 클라이언트의 가위바위보를 서버의 부모 프로세스로 전달 (pipe 이용)*/
+			write(fd1[1], buffer, 1);
+			/* 4. 서버와 클라이언트의 가위바위보 결과를 서버의 부모 프로세스에게 수신 ( pipe 이용) */
+			str_len = read(fd2[0], buffer, BUFSIZE);
+			/* 5. 가위바위보 결과를 클라이언트에게 전달.(socket 이용) */
+			write(clnt_sock, buffer, str_len);
 
 			puts("연결 종료");
 			close(clnt_sock);

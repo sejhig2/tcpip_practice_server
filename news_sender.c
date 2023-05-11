@@ -16,7 +16,7 @@
 #include "error_handling.h"
 
 #define TTL (64)
-#define BUFSIZE (30)
+#define BUFSIZE (100)
 
 int main(int argc, char **argv)
 {
@@ -48,7 +48,9 @@ int main(int argc, char **argv)
 		error_handling("setsockopt() error");
 	}
 
-	if ((fp = fopen("News.txt", 'r')) == NULL) {
+	if ((fp = fopen("/usr/local/JH/project_in_eclipse/tcp_ip_socket_programing_server/src/News.txt",
+	            "r")) == NULL) {
+		printf("fopen : %d\n", fp);
 		error_handling("fopen() error");
 	}
 
