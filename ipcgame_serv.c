@@ -49,6 +49,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	/* 서버의 부모 프로세스 <->자식 프로세스의 통신을 위한 파이프 생성 */
 	if ((pipe(fd1) == -1) || (pipe(fd2) == -1)) {
 		error_handling("pipe() error");
 	}
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
 
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); /* 시스템의 IP 주소를 자동으로 가져옴 */
 	serv_addr.sin_port = htons(atoi(argv[1]));
 
 	if (bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr))) {
@@ -82,6 +83,7 @@ int main(int argc, char **argv)
 	while(1) {
 		addr_size = sizeof(clnt_addr);
 
+		/* 클라이언트의 파일 디스크립터 가져오기 */
 		clnt_sock = accept(serv_sock, (struct sockaddr*) &clnt_addr, &addr_size);
 		if (clnt_sock == -1) {
 			/* 클라이언트의 수신이 안 되면 계속 accept */
